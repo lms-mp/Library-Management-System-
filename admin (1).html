@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Panel</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6fb;
+    }
+
+    .top-bar {
+      background: #0b20ff;
+      color: #fff;
+      padding: 16px;
+      font-size: 22px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logout-btn {
+      background: red;
+      border: none;
+      padding: 8px 14px;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 30px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      border: none;
+      border-radius: 8px;
+      background: #0b20ff;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0915cc;
+    }
+
+    .delete-btn {
+      background: #e74c3c;
+    }
+
+    .delete-btn:hover {
+      background: #c0392b;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- 🔵 Top Bar -->
+  <div class="top-bar">
+    <div>👑 Admin Dashboard</div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+
+  <!-- 🟢 Main Container -->
+  <div class="container">
+
+    <h2>Add New Book</h2>
+    <input type="text" id="bookName" placeholder="Enter Book Name">
+    <button onclick="addBook()">+ Add Book</button>
+
+    <h2 style="margin-top:25px;">Delete Book</h2>
+    <input type="text" id="deleteBook" placeholder="Enter Book Name">
+    <button class="delete-btn" onclick="deleteBook()">Delete Book</button>
+
+  </div>
+
+  <script>
+    // 🔒 Security Check
+    if (localStorage.getItem("isAdmin") !== "true") {
+      alert("Access Denied ❌");
+      window.location.href = "index.html";
+    }
+
+    // 📚 Get books
+    function getBooks() {
+      return JSON.parse(localStorage.getItem("books")) || [];
+    }
+
+    function setBooks(books) {
+      localStorage.setItem("books", JSON.stringify(books));
+    }
+
+    // ➕ Add Book
+    function addBook() {
+      const name = document.getElementById("bookName").value.trim();
+      if (!name) {
+        alert("Enter book name ❌");
+        return;
+      }
+
+      const books = getBooks();
+
+      if (books.some(b => b.name.toLowerCase() === name.toLowerCase())) {
+        alert("Book already exists ❌");
+        return;
+      }
+
+      books.push({ name });
+      setBooks(books);
+
+      alert("Book added successfully ✅");
+      document.getElementById("bookName").value = "";
+    }
+
+    // ❌ Delete Book
+    function deleteBook() {
+      const name = document.getElementById("deleteBook").value.trim();
+      if (!name) {
+        alert("Enter book name ❌");
+        return;
+      }
+
+      let books = getBooks();
+      const newBooks = books.filter(b => b.name.toLowerCase() !== name.toLowerCase());
+
+      if (books.length === newBooks.length) {
+        alert("Book not found ❌");
+        return;
+      }
+
+      setBooks(newBooks);
+
+      alert("Book deleted successfully ✅");
+      document.getElementById("deleteBook").value = "";
+    }
+
+    // 🔓 Logout
+    function logout() {
+      localStorage.setItem("isAdmin", "false");
+      window.location.href = "index.html";
+    }
+  </script>
+
+</body>
+</html>

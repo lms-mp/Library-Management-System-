@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Library Dashboard</title>
+
+<style>
+body {
+  margin:0;
+  font-family:Arial;
+  background:#f5f5f5;
+}
+
+.top-bar {
+  background:#0b20ff;
+  color:white;
+  padding:15px;
+  display:flex;
+  justify-content:space-between;
+}
+
+.container {
+  padding:15px;
+}
+
+.counts {
+  display:flex;
+  gap:10px;
+}
+
+.box {
+  background:white;
+  padding:10px;
+  flex:1;
+  text-align:center;
+}
+
+.book-item {
+  background:white;
+  padding:10px;
+  margin-top:10px;
+  display:flex;
+  justify-content:space-between;
+}
+
+button {
+  background:#0b20ff;
+  color:white;
+  border:none;
+  padding:5px 10px;
+  cursor:pointer;
+}
+
+/* Modal */
+.modal {
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.5);
+  justify-content:center;
+  align-items:center;
+}
+
+.modal-box {
+  background:white;
+  padding:20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="top-bar">
+  <h2>Library Dashboard</h2>
+  <button onclick="openAdmin()">Admin</button>
+</div>
+
+<div class="container">
+
+<div class="counts">
+  <div class="box">
+    <h4>Total</h4>
+    <div id="totalBooks">0</div>
+  </div>
+  <div class="box">
+    <h4>Issued</h4>
+    <div id="issuedBooks">0</div>
+  </div>
+  <div class="box">
+    <h4>Available</h4>
+    <div id="availableBooks">0</div>
+  </div>
+</div>
+
+<h3>📚 Books</h3>
+<div id="booksList"></div>
+
+<h3>👤 My Books</h3>
+<div id="myBooks"></div>
+
+</div>
+
+<!-- Admin Login -->
+<div class="modal" id="adminModal">
+  <div class="modal-box">
+    <h3>Admin Login</h3>
+    <input id="adminUser" placeholder="Username"><br><br>
+    <input id="adminPass" type="password" placeholder="Password"><br><br>
+    <button onclick="loginAdmin()">Login</button>
+    <button onclick="closeAdmin()">Cancel</button>
+  </div>
+</div>
+
+<script>
+const currentStudent = "Roshan";
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "1234";
+
+/* INIT DATA */
+function initData() {
+  if (!localStorage.getItem("books")) {
+    localStorage.setItem("books", JSON.stringify(["Math","Science","English"]));
+  }
+  if (!localStorage.getItem("issues")) {
+    localStorage.setItem("issues", JSON.stringify({}));
+  }
+}
+
+/* GET DATA */
+function getBooks() {
+  return JSON.parse(localStorage.getItem("books")) || [];
+}
+
+function getIssues() {
+  return JSON.parse(localStorage.getItem("issues")) || {};
+}
+
+/* SAVE */
+function setIssues(data) {
+  localStorage.setItem("issues", JSON.stringify(data));
+}
+
+/* DASHBOARD */
+function renderDashboard() {
+  const books = getBooks();
+  const issues = getIssues();
+
+  document.getElementById("totalBooks").innerText = books.length;
+  document.getElementById("issuedBooks").innerText = Object.keys(issues).length;
+  document.getElementById("availableBooks").innerText =
+    books.length - Object.keys(issues).length;
+
+  const list = document.getElementById("booksList");
+  list.innerHTML = "";
+
+  books.forEach(book => {
+    let issued = issues[book];
+
+    list.innerHTML += `
+      <div class="book-item">
+        <div>
+          <b>${book}</b><br>
+          ${issued ? "Issued" : "Available"}
+        </div>
+        <button ${issued?"disabled":""}
+        onclick="issueBook('${book}')">
+        ${issued?"Issued":"Issue"}
+        </button>
+      </div>
+    `;
+  });
+}
+
+/* PROFILE */
+function renderProfile() {
+  const issues = getIssues();
+  const my = Object.keys(issues).filter(b => issues[b]===currentStudent);
+
+  const myBooksDiv = document.getElementById("myBooks");
+  myBooksDiv.innerHTML = "";
+
+  my.forEach(b=>{
+    myBooksDiv.innerHTML += `
+      <div class="book-item">
+        ${b}
+        <button onclick="returnBook('${b}')">Return</button>
+      </div>
+    `;
+  });
+}
+
+/* ISSUE */
+function issueBook(book) {
+  let issues = getIssues();
+  issues[book] = currentStudent;
+  setIssues(issues);
+
+  renderDashboard();
+  renderProfile();
+}
+
+/* RETURN */
+function returnBook(book) {
+  let issues = getIssues();
+  delete issues[book];
+  setIssues(issues);
+
+  renderDashboard();
+  renderProfile();
+}
+
+/* ADMIN */
+function openAdmin(){
+  document.getElementById("adminModal").style.display="flex";
+}
+function closeAdmin(){
+  document.getElementById("adminModal").style.display="none";
+}
+
+/* 🔥 FIXED LOGIN FUNCTION */
+function loginAdmin(){
+  const user = document.getElementById("adminUser").value.trim();
+  const pass = document.getElementById("adminPass").value.trim();
+
+  if(user === ADMIN_USER && pass === ADMIN_PASS){
+    alert("Login Success ✅");
+    localStorage.setItem("isAdmin","true");
+    window.location.href="admin.html";
+  } else {
+    alert("Wrong login ❌");
+  }
+}
+
+/* START */
+initData();
+renderDashboard();
+renderProfile();
+</script>
+
+</body>
+</html>
